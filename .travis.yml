@@ -1,0 +1,32 @@
+notifications:
+        email:
+                - rhcs-dev-list@redhat.com
+sudo: required
+
+services:
+        - docker
+
+before_script:
+        - sudo apt-get update
+        - cd dogtag/pki; git fetch origin pull/$TRAVIS_PULL_REQUEST/head:PR_HEAD
+        - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
+        - sudo service docker restart
+        - echo `pwd`; ls .
+        - sleep 5
+script:
+        - cp -r docker_ci ../; cd ../docker_ci; cp -r ../pki .
+        - docker build -t pki .
+        - /root/amolkahat/pki/docker_ci/install_instances.sh
+        -
+after_success:
+        - echo "Job is complete."
+
+
+# TODO Git clone can be removed. This will no longer need.
+# TODO need to add push commit id and fetch the repo.
+
+# TODO Codecove repo token. Need organisation token for the codecoverage.
+# docker -d pki codecov --token=a195362c-f040-45fd-9325-a108cef5f3be
+
+# TODO Need to add lint.sh file.
+# TODO Need to build the image with the docker providers.
